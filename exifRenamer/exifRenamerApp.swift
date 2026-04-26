@@ -2,16 +2,20 @@
 //  exifRenamerApp.swift
 //  exifRenamer
 //
-//  Created by Dirk Clemens on 26.04.26.
-//
 
 import SwiftUI
 
 @main
 struct exifRenamerApp: App {
+    @State private var vm = AppViewModel()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(vm)
+        }
+        Settings {
+            SettingsView()
         }
     }
 }
