@@ -9,6 +9,10 @@ import SwiftUI
 struct exifRenamerApp: App {
     @State private var vm = AppViewModel()
 
+    init() {
+        UpdateChecker.checkForUpdate()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
