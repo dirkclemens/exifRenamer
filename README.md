@@ -1,6 +1,12 @@
 # exifRenamer
 
-**exifRenamer** is a native macOS app for renaming and organising photo files based on their EXIF metadata. With a flexible format-string system and drag & drop support, images can be renamed quickly and consistently according to your own scheme and sorted into folder structures.
+exifRenamer is a native macOS app for renaming and organising photo files based on their EXIF metadata. Drop in a batch of photos, pick or build a naming style from a flexible token system, and watch a live preview of every new filename before anything is renamed — with optional automatic sorting into date-based folder structures and configurable handling of naming conflicts.
+
+---
+
+## Screenshots
+
+![screenshot](./screenshot.png)
 
 ---
 
@@ -18,17 +24,12 @@
 
 ---
 
-## Screenshots
-
-![screenshot](./screenshot.png)
-
----
-
 ## Requirements
 
 | Requirement | Version |
 |---|---|
 | macOS | 14 Sonoma or later |
+| Architecture | Apple Silicon only |
 | Xcode | 15 or later |
 | Swift | 5.9 or later |
 
@@ -48,9 +49,21 @@ In Xcode, set the **Scheme** to `exifRenamer`, select your Mac as the target, an
 
 > An Apple Developer account is not required for local builds (an unsigned build is sufficient for your own Mac).
 
+### Prebuilt DMG
+
+A ready-to-run build is available as `exifRenamer-1.0.dmg` (ad-hoc signed, Apple Silicon only). Since it isn't notarized by Apple, macOS blocks it on first launch. Remove the quarantine flag before opening:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/exifRenamer.app
+```
+
+Alternatively, right-click the app in Finder and choose "Open".
+
 ---
 
-## Format Tokens
+## Usage
+
+### Format Tokens
 
 Naming styles are defined as format strings with placeholders:
 
@@ -71,7 +84,7 @@ Naming styles are defined as format strings with placeholders:
 
 > `%C` is only inserted when filename collisions are detected within the current batch.
 
-### Built-in Example Styles
+#### Built-in Example Styles
 
 | Name | Format String | Example Result |
 |---|---|---|
@@ -79,9 +92,7 @@ Naming styles are defined as format strings with placeholders:
 | Date only | `%Y-%M-%D%C.%F` | `2024-06-15.jpg` |
 | Camera+Date | `%make_%model_%Y%M%D_%h%m%s%C.%F` | `Canon_EOS_R5_20240615_143005.jpg` |
 
----
-
-## Folder Organisation
+### Folder Organisation
 
 The optional **Folder Pattern** field in a style automatically creates subfolders using the same tokens:
 
@@ -90,9 +101,7 @@ The optional **Folder Pattern** field in a style automatically creates subfolder
 %Y/%M         →  2024/06/
 ```
 
----
-
-## Conflict Handling
+### Conflict Handling
 
 When a file with the same name already exists at the destination, the configured strategy applies:
 
@@ -137,9 +146,7 @@ exifRenamer/
     └── SettingsView.swift       # App preferences
 ```
 
----
-
-## Technical Details
+### Technical Details
 
 - **Framework:** SwiftUI
 - **Architecture:** MVVM with the `@Observable` macro (Swift 5.9 / macOS 14+)
@@ -164,9 +171,7 @@ Pull requests are welcome! Please open an issue first to discuss any significant
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
-
----
+This project is licensed under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0) — see [LICENSE](LICENSE) for details. Free for noncommercial use; commercial use requires a separate license from the author.
 
 ## Author
 
