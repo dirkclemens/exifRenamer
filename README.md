@@ -51,7 +51,7 @@ In Xcode, set the **Scheme** to `exifRenamer`, select your Mac as the target, an
 
 ### Prebuilt DMG
 
-A ready-to-run build is available as `exifRenamer-1.0.dmg` (ad-hoc signed, Apple Silicon only). Since it isn't notarized by Apple, macOS blocks it on first launch. Remove the quarantine flag before opening:
+A ready-to-run build is available as `exifRenamer.dmg` (ad-hoc signed, Apple Silicon only). Since it isn't notarized by Apple, macOS blocks it on first launch. Remove the quarantine flag before opening:
 
 ```bash
 xattr -dr com.apple.quarantine /Applications/exifRenamer.app
