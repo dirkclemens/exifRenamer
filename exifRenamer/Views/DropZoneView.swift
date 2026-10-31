@@ -16,7 +16,8 @@ struct DropZoneView: View {
                 Image(systemName: "photo.on.rectangle.angled")
                     .font(.system(size: 40))
                     .foregroundStyle(.secondary)
-                Text("Drop photos here")
+                // Updated text to reflect video support
+                Text("Drop photos and videos here")
                     .font(.headline)
                     .foregroundStyle(.secondary)
                 Button("Choose files…") { openPanel() }
@@ -65,9 +66,14 @@ struct DropZoneView: View {
 
         group.notify(queue: .main) {
             let imageExts = Set(["jpg","jpeg","png","tiff","tif","heic","raw","cr2","cr3","nef","arw","dng","raf","rw2"])
-            let filtered = urls.filter { imageExts.contains($0.pathExtension.lowercased()) }
-            DebugLog.info("Drop complete: urls=\(urls.count), filteredImages=\(filtered.count)")
+            let videoExts = Set(["mp4", "mov", "m4v", "avi", "mkv", "hevc", "mts", "m2ts", "3gp"])
+            let mediaExts = imageExts.union(videoExts)
+            
+            let filtered = urls.filter { mediaExts.contains($0.pathExtension.lowercased()) }
+            DebugLog.info("Drop complete: urls=\(urls.count), filteredMedia=\(filtered.count)")
             filtered.forEach { DebugLog.info("Drop accepted: \($0.path)") }
+            
+            // Still using addPhotos since we haven't renamed it in AppViewModel
             vm.addPhotos(urls: filtered)
         }
 
@@ -78,7 +84,8 @@ struct DropZoneView: View {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = false
-        panel.allowedContentTypes = [.image]
+        // Added video-related content types
+        panel.allowedContentTypes = [.image, .movie, .quickTimeMovie, .mpeg4Movie, .audiovisualContent]
         if panel.runModal() == .OK {
             DebugLog.info("OpenPanel selected: \(panel.urls.count) files")
             panel.urls.forEach { DebugLog.info("OpenPanel file: \($0.path)") }

@@ -9,6 +9,11 @@ struct EXIFData {
     var fileExtension: String = ""
     var raw: [String: Any] = [:]
 
+    // Video specific properties
+    var resolution: String?
+    var resolutionLabel: String?
+    var frameRate: String?
+    
     // Computed date components
     var year: String   { component("yyyy") }
     var month: String  { component("MM") }
