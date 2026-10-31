@@ -32,8 +32,8 @@ class FolderAccessManager {
         DebugLog.info("FolderAccess: requesting access for \(key)")
 
         let panel = NSOpenPanel()
-        panel.message = "Bitte gewähre Zugriff auf den Ordner \"\(directory.lastPathComponent)\", um Dateien darin umbenennen zu können."
-        panel.prompt = "Zugriff gewähren"
+        panel.message = "Please grant access to the folder \"\(directory.lastPathComponent)\" so files in it can be renamed."
+        panel.prompt = "Grant access"
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.canCreateDirectories = false

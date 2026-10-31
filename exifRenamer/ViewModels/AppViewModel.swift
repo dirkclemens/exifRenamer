@@ -19,6 +19,8 @@ enum ConflictStrategy: String, CaseIterable, Codable {
 
 @Observable
 class AppViewModel {
+    // Keeping the array named 'photos' to avoid breaking UI views,
+    // but it now handles both Photo and Video items seamlessly!
     var photos: [Photo] = []
     var styles: [NamingStyle] = []
     var selectedStyleID: UUID?
@@ -39,12 +41,21 @@ class AppViewModel {
 
     func addPhotos(urls: [URL]) {
         let existing = Set(photos.map { $0.url })
-        let new = urls.filter { !existing.contains($0) }.map { Photo(url: $0) }
-        for photo in new {
-            photo.exifData = EXIFReader.read(url: photo.url)
+        // Wrap new items (both photos and videos)
+        let newMedia = urls.filter { !existing.contains($0) }.map { Photo(url: $0) }
+        
+        // Wrap the async EXIF reading in a Task
+        Task {
+            for item in newMedia {
+                item.exifData = await EXIFReader.read(url: item.url)
+            }
+            
+            // Update the UI back on the Main thread
+            await MainActor.run {
+                self.photos.append(contentsOf: newMedia)
+                self.refreshProposedNames()
+            }
         }
-        photos.append(contentsOf: new)
-        refreshProposedNames()
     }
 
     func removePhoto(_ photo: Photo) {
@@ -59,21 +70,25 @@ class AppViewModel {
         guard let style = selectedStyle else { return }
         // First pass — build base names without counter
         var baseNames: [UUID: String] = [:]
-        for photo in photos {
-            let base = FormatEngine.resolve(format: style.formatString, exif: photo.exifData ?? EXIFData(), counter: nil)
-            baseNames[photo.id] = base
+        for item in photos {
+            let origName = item.url.deletingPathExtension().lastPathComponent
+            let base = FormatEngine.resolve(format: style.formatString, exif: item.exifData ?? EXIFData(), originalName: origName, counter: nil)
+            baseNames[item.id] = base
         }
+        
         // Detect collisions and inject counter
         var counts: [String: Int] = [:]
         for name in baseNames.values { counts[name, default: 0] += 1 }
+        
         var seen: [String: Int] = [:]
-        for photo in photos {
-            let base = baseNames[photo.id] ?? photo.originalName
+        for item in photos {
+            let base = baseNames[item.id] ?? item.originalName
             if counts[base, default: 0] > 1 {
                 seen[base, default: 0] += 1
-                photo.proposedName = FormatEngine.resolve(format: style.formatString, exif: photo.exifData ?? EXIFData(), counter: seen[base])
+                let origName = item.url.deletingPathExtension().lastPathComponent
+                item.proposedName = FormatEngine.resolve(format: style.formatString, exif: item.exifData ?? EXIFData(), originalName: origName, counter: seen[base])
             } else {
-                photo.proposedName = base
+                item.proposedName = base
             }
         }
     }
@@ -91,11 +106,12 @@ class AppViewModel {
             conflictStrategy: conflictStrategy,
             createFolders: createFolders
         )
-        for (photo, result) in zip(photos, results) {
+        
+        for (item, result) in zip(photos, results) {
             switch result {
-            case .success:      photo.status = .renamed
-            case .skipped:      photo.status = .skipped
-            case .failed(let e): photo.status = .failed(e.localizedDescription)
+            case .success:       item.status = .renamed
+            case .skipped:       item.status = .skipped
+            case .failed(let e): item.status = .failed(e.localizedDescription)
             }
         }
     }

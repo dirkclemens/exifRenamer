@@ -4,6 +4,12 @@ enum PhotoStatus {
     case pending, renamed, skipped, conflict, failed(String)
 }
 
+enum MediaType: String {
+    case photo = "Photo"
+    case video = "Video"
+    case unknown = "Unknown"
+}
+
 @Observable
 class Photo: Identifiable {
     let id = UUID()
@@ -12,6 +18,9 @@ class Photo: Identifiable {
     var exifData: EXIFData?
     var proposedName: String = ""
     var status: PhotoStatus = .pending
+    
+    // Added to distinguish between photos and videos
+    var mediaType: MediaType = .unknown
 
     var dirBookmarkData: Data?   // security-scoped bookmark for parent directory
 
@@ -19,7 +28,12 @@ class Photo: Identifiable {
         self.url = url
         self.bookmarkData = Self.makeBookmark(for: url)
         self.dirBookmarkData = Self.makeBookmark(for: url.deletingLastPathComponent())
-        DebugLog.info("Photo init: \(url.path), fileBookmark=\(self.bookmarkData != nil), dirBookmark=\(self.dirBookmarkData != nil)")
+        
+        let ext = url.pathExtension.lowercased()
+        let videoExts = Set(["mp4", "mov", "m4v", "avi", "mkv", "hevc", "mts", "m2ts", "3gp"])
+        self.mediaType = videoExts.contains(ext) ? .video : .photo
+        
+        DebugLog.info("\(mediaType.rawValue) init: \(url.path), fileBookmark=\(self.bookmarkData != nil), dirBookmark=\(self.dirBookmarkData != nil)")
     }
 
     var originalName: String { url.lastPathComponent }
