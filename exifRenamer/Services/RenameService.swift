@@ -56,7 +56,7 @@ struct RenameService {
                     let fam = FolderAccessManager.shared
                     guard fam.requestAccess(to: sourceDir) else {
                         throw NSError(domain: "ExifRenamer", code: 2, userInfo: [
-                            NSLocalizedDescriptionKey: "Kein Zugriff auf Ordner \"\(sourceDir.lastPathComponent)\"."
+                            NSLocalizedDescriptionKey: "No access to folder \"\(sourceDir.lastPathComponent)\"."
                         ])
                     }
                     let (scopedDir, dirStarted) = fam.startAccessing(directory: sourceDir)
