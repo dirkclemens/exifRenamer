@@ -35,6 +35,13 @@ class AppViewModel {
     var processedCount: Int = 0
     var processingTotal: Int = 0
     var errorMessage: String?
+    /// Operations of the last rename batch that can be undone (empty = nothing to undo).
+    private(set) var lastBatchOperations: [FileOperation] = []
+    var includeSidecars: Bool = UserDefaults.standard.object(forKey: "includeSidecars") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(includeSidecars, forKey: "includeSidecars") }
+    }
+
+    var canUndo: Bool { !isProcessing && !lastBatchOperations.isEmpty }
 
     var selectedStyle: NamingStyle? {
         styles.first { $0.id == selectedStyleID }
@@ -141,11 +148,16 @@ class AppViewModel {
 
     /// Generates names for all photos. Names are guaranteed to be unique within the batch:
     /// colliding names get a counter (via %C, or appended before the extension if the
-    /// format has no %C). Counters follow capture time, then original file name.
+    /// format has no %C). Files of one shot — same folder and same original name, e.g.
+    /// IMG_0001.CR3 + IMG_0001.JPG — form a pair and always get the same counter, so they
+    /// stay together. Counters follow capture time, then original file name.
     func refreshProposedNames() {
         guard let style = selectedStyle else { return }
         let format = style.formatString
         let hasCounter = FormatEngine.containsCounter(format)
+
+        func stem(_ name: String) -> String { (name as NSString).deletingPathExtension.lowercased() }
+        func pairKey(_ p: Photo) -> String { p.url.deletingPathExtension().standardizedFileURL.path.lowercased() }
 
         // First pass — base names without counter
         var baseNames: [UUID: String] = [:]
@@ -153,21 +165,27 @@ class AppViewModel {
             baseNames[photo.id] = FormatEngine.fileName(format: format, exif: photo.exifData ?? EXIFData(), counter: nil)
         }
 
-        // Detect collisions (case-insensitive, like APFS/HFS+ default volumes)
-        var counts: [String: Int] = [:]
-        for name in baseNames.values { counts[name.lowercased(), default: 0] += 1 }
-
-        let ordered = photos.sorted {
-            let a = $0.exifData?.sortKey ?? "", b = $1.exifData?.sortKey ?? ""
-            return a != b ? a < b : $0.originalName.localizedStandardCompare($1.originalName) == .orderedAscending
+        // Which shots (pairs) end up with the same name stem? (case-insensitive, like APFS)
+        var pairsPerStem: [String: [String: String]] = [:]   // stem → pairKey → earliest sort key
+        for photo in photos {
+            let s = stem(baseNames[photo.id] ?? photo.originalName)
+            let sortKey = (photo.exifData?.sortKey ?? "") + "|" + photo.originalName.lowercased()
+            let k = pairKey(photo)
+            if let existing = pairsPerStem[s]?[k], existing <= sortKey { continue }
+            pairsPerStem[s, default: [:]][k] = sortKey
         }
-        var seen: [String: Int] = [:]
-        for photo in ordered {
+
+        // Number colliding shots chronologically.
+        var counterForPair: [String: [String: Int]] = [:]   // stem → pairKey → counter
+        for (s, pairs) in pairsPerStem where pairs.count > 1 {
+            let ordered = pairs.sorted { $0.value != $1.value ? $0.value < $1.value : $0.key < $1.key }
+            for (i, pair) in ordered.enumerated() { counterForPair[s, default: [:]][pair.key] = i + 1 }
+        }
+
+        for photo in photos {
             let base = baseNames[photo.id] ?? photo.originalName
             let newName: String
-            if counts[base.lowercased(), default: 0] > 1 {
-                seen[base.lowercased(), default: 0] += 1
-                let n = seen[base.lowercased()]!
+            if let n = counterForPair[stem(base)]?[pairKey(photo)] {
                 if hasCounter {
                     newName = FormatEngine.fileName(format: format, exif: photo.exifData ?? EXIFData(), counter: n)
                 } else {
@@ -194,17 +212,20 @@ class AppViewModel {
         errorMessage = nil
         defer { isProcessing = false }
 
-        let results = await RenameService.process(
+        let outcome = await RenameService.process(
             photos: batch,
             style: style,
             outputMode: outputMode,
             conflictStrategy: conflictStrategy,
             createFolders: effectiveCreateFolders,
+            includeSidecars: includeSidecars,
             progress: { [weak self] done in self?.processedCount = done }
         )
+        lastBatchOperations = outcome.operations
+        RenameLog.write(outcome.operations, action: "rename")
 
         var failed = 0, skipped = 0
-        for (photo, result) in zip(batch, results) {
+        for (photo, result) in zip(batch, outcome.results) {
             switch result {
             case .success:       photo.status = .renamed
             case .skipped:       photo.status = .skipped; skipped += 1
@@ -212,9 +233,34 @@ class AppViewModel {
             }
         }
         if failed > 0 {
-            errorMessage = "\(failed) of \(batch.count) file(s) could not be processed. See the Status column for details."
+            errorMessage = String(localized: "\(failed) of \(batch.count) file(s) could not be processed. See the Status column for details.")
         } else if skipped > 0 {
-            errorMessage = "\(skipped) of \(batch.count) file(s) were skipped."
+            errorMessage = String(localized: "\(skipped) of \(batch.count) file(s) were skipped.")
+        }
+    }
+
+    /// Reverts the last rename batch (moves back, removes copies and created folders).
+    func undoLastBatch() async {
+        guard canUndo else { return }
+        let operations = lastBatchOperations
+        lastBatchOperations = []
+        isProcessing = true
+        processedCount = 0
+        processingTotal = 0
+        errorMessage = nil
+        defer { isProcessing = false }
+
+        let outcome = await RenameService.undo(operations)
+        RenameLog.write(outcome.undone, action: "undo")
+
+        let affected = Set(operations.compactMap(\.photoID))
+        for photo in photos where affected.contains(photo.id) {
+            photo.status = .pending
+        }
+        if outcome.failed > 0 {
+            errorMessage = String(localized: "\(outcome.failed) change(s) could not be undone.")
+        } else if outcome.notRestorable > 0 {
+            errorMessage = String(localized: "Undone. \(outcome.notRestorable) overwritten file(s) remain in the Trash.")
         }
     }
 }

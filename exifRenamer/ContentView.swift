@@ -7,6 +7,7 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(AppViewModel.self) var vm
+    @Environment(\.undoManager) private var undoManager
 
     var body: some View {
         VStack(spacing: 0) {
@@ -14,19 +15,23 @@ struct ContentView: View {
             HStack(spacing: 12) {
                 StyleSelectorView()
                 Spacer()
-                if !vm.photos.isEmpty {
-                    if vm.isProcessing {
-                        ProgressView(value: Double(vm.processedCount), total: Double(max(vm.processingTotal, 1)))
-                            .frame(width: 120)
-                        Text("\(vm.processedCount)/\(vm.processingTotal)")
-                            .monospacedDigit()
-                            .foregroundStyle(.secondary)
+                if vm.isProcessing {
+                    ProgressView(value: Double(vm.processedCount), total: Double(max(vm.processingTotal, 1)))
+                        .frame(width: 120)
+                    Text("\(vm.processedCount)/\(vm.processingTotal)")
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                }
+                if vm.canUndo {
+                    Button { undo() } label: {
+                        Label("Undo", systemImage: "arrow.uturn.backward")
                     }
+                    .help("Undo the last rename (⌘Z)")
+                }
+                if !vm.photos.isEmpty {
                     Button("Clear", role: .destructive) { vm.clearAll() }
                         .disabled(vm.isProcessing)
-                    Button {
-                        Task { await vm.renameAll() }
-                    } label: {
+                    Button { rename() } label: {
                         Label(vm.isProcessing ? "Renaming…" : "Rename", systemImage: "pencil.and.list.clipboard")
                     }
                     .buttonStyle(.borderedProminent)
@@ -66,6 +71,25 @@ struct ContentView: View {
                 .padding(.top, 8)
         }
         .frame(minWidth: 700, minHeight: 500)
+    }
+
+    private func rename() {
+        Task {
+            await vm.renameAll()
+            // Make the batch undoable via Edit › Undo (⌘Z) as well.
+            undoManager?.removeAllActions(withTarget: vm)
+            if vm.canUndo {
+                undoManager?.registerUndo(withTarget: vm) { vm in
+                    Task { await vm.undoLastBatch() }
+                }
+                undoManager?.setActionName(String(localized: "Rename"))
+            }
+        }
+    }
+
+    private func undo() {
+        undoManager?.removeAllActions(withTarget: vm)
+        Task { await vm.undoLastBatch() }
     }
 }
 

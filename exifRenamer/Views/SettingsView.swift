@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppViewModel.self) var vm
     @AppStorage(ConflictStrategy.defaultsKey) private var conflictRaw: String = ConflictStrategy.autoNumber.rawValue
+    @AppStorage(RenameLog.enabledKey) private var writeLog = true
     @State private var grantedFolders: [String] = FolderAccessManager.shared.grantedFolders
 
     var body: some View {
@@ -12,6 +13,13 @@ struct SettingsView: View {
             }
             .onChange(of: conflictRaw) { _, new in
                 if let s = ConflictStrategy(rawValue: new) { vm.conflictStrategy = s }
+            }
+
+            LabeledContent("Rename log:") {
+                VStack(alignment: .leading, spacing: 4) {
+                    Toggle("Write a log file for every rename", isOn: $writeLog)
+                    Button("Show Logs in Finder") { RenameLog.revealInFinder() }
+                }
             }
 
             LabeledContent("Folder permissions:") {

@@ -25,6 +25,9 @@ struct OutputOptionsView: View {
                           ? "Files are copied into subfolders; originals stay in place."
                           : "Set a folder pattern in the style editor first.")
 
+                Toggle("Include sidecar files (.xmp, .aae)", isOn: $vm.includeSidecars)
+                    .help("Sidecar files with the same name are renamed or copied together with the photo.")
+
                 Divider()
 
                 Picker("On conflict:", selection: $vm.conflictStrategy) {

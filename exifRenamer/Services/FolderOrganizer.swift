@@ -10,11 +10,20 @@ struct FolderOrganizer {
         return components.reduce(baseDestination) { $0.appendingPathComponent($1, isDirectory: true) }
     }
 
-    /// Returns the destination folder URL for a photo, creating it if needed.
+    /// Returns the destination folder URL for a photo, creating it if needed, plus the folders
+    /// that were newly created (outermost first — needed to undo).
     /// Call only while write access to `baseDestination` is held.
-    static func resolvedFolder(for photo: Photo, style: NamingStyle, baseDestination: URL) throws -> URL {
+    static func resolvedFolder(for photo: Photo, style: NamingStyle, baseDestination: URL) throws -> (url: URL, created: [URL]) {
         let url = folder(for: photo, style: style, baseDestination: baseDestination)
-        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
-        return url
+        let fm = FileManager.default
+        var missing: [URL] = []
+        var current = url.standardizedFileURL
+        let basePath = baseDestination.standardizedFileURL.path
+        while current.path.count > basePath.count, !fm.fileExists(atPath: current.path) {
+            missing.append(current)
+            current = current.deletingLastPathComponent()
+        }
+        try fm.createDirectory(at: url, withIntermediateDirectories: true)
+        return (url, missing.reversed())
     }
 }
