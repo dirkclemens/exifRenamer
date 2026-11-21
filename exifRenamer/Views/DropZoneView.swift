@@ -40,8 +40,18 @@ struct DropZoneView: View {
 
     private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
         DebugLog.info("Drop started: providers=\(providers.count)")
+        let vm = vm
+        Self.loadFileURLs(from: providers) { urls in
+            Task { @MainActor in await vm.addItems(urls: urls) }
+        }
+        return true
+    }
 
-        // loadItem calls back on arbitrary background queues — collect thread-safely.
+    /// NSItemProvider calls back on arbitrary background queues. Being `nonisolated`, the
+    /// callbacks here are not main-actor-isolated, so Swift 6's runtime isolation checks
+    /// can't trap; URLs are collected thread-safely and delivered once all are loaded.
+    nonisolated static func loadFileURLs(from providers: [NSItemProvider],
+                                                 completion: @escaping @Sendable ([URL]) -> Void) {
         let collector = URLCollector()
         let group = DispatchGroup()
 
@@ -64,13 +74,11 @@ struct DropZoneView: View {
             }
         }
 
-        group.notify(queue: .main) {
+        group.notify(queue: .global(qos: .userInitiated)) {
             let urls = collector.urls
             DebugLog.info("Drop complete: urls=\(urls.count)")
-            Task { await vm.addItems(urls: urls) }
+            completion(urls)
         }
-
-        return true
     }
 
     private func openPanel() {
