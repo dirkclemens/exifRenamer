@@ -1,7 +1,7 @@
 import Foundation
 
 enum PhotoStatus {
-    case pending, renamed, skipped, conflict, failed(String)
+    case pending, renamed, skipped, failed(String)
 }
 
 @Observable
@@ -13,9 +13,10 @@ class Photo: Identifiable {
     var proposedName: String = ""
     var status: PhotoStatus = .pending
 
-    init(url: URL) {
+    /// - Parameter bookmarkData: pass a bookmark created off the main thread; nil creates one here.
+    init(url: URL, bookmarkData: Data? = nil) {
         self.url = url
-        self.bookmarkData = Self.makeBookmark(for: url)
+        self.bookmarkData = bookmarkData ?? Self.makeBookmark(for: url)
         DebugLog.info("Photo init: \(url.path), fileBookmark=\(self.bookmarkData != nil)")
     }
 
@@ -66,7 +67,7 @@ class Photo: Identifiable {
         return (resolved, true)
     }
 
-    private static func makeBookmark(for url: URL) -> Data? {
+    nonisolated static func makeBookmark(for url: URL) -> Data? {
         do {
             let data = try url.bookmarkData(
                 options: .withSecurityScope,

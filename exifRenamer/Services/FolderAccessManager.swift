@@ -1,15 +1,39 @@
 import AppKit
 import Foundation
 
+/// Folder write access as needed by `RenameService` (abstracted so tests can grant access without dialogs).
+protocol FolderAccessing: AnyObject {
+    func requestAccess(to directory: URL) -> Bool
+    func startAccessing(directory: URL) -> (URL?, Bool)
+    func stopAccessing(url: URL)
+}
+
 /// Manages directory-level security-scoped access.
 /// Dropping single files only grants file-level access; renaming/creating files in a
 /// folder requires folder access, granted via NSOpenPanel or by dropping the folder itself.
 /// Access to a folder covers all of its subfolders.
-class FolderAccessManager {
+/// Granted folders are remembered across launches (app-scoped security bookmarks in UserDefaults).
+class FolderAccessManager: FolderAccessing {
     static let shared = FolderAccessManager()
+    private static let defaultsKey = "folderAccessBookmarks"
 
     // granted directory path → security-scoped bookmark data
-    private var bookmarks: [String: Data] = [:]
+    private var bookmarks: [String: Data] {
+        didSet { UserDefaults.standard.set(bookmarks, forKey: Self.defaultsKey) }
+    }
+
+    init() {
+        bookmarks = UserDefaults.standard.dictionary(forKey: Self.defaultsKey) as? [String: Data] ?? [:]
+    }
+
+    /// Folders the app currently remembers access to.
+    var grantedFolders: [String] { bookmarks.keys.sorted() }
+
+    /// Forget all remembered folder permissions.
+    func forgetAll() {
+        bookmarks = [:]
+        DebugLog.info("FolderAccess: all remembered folders forgotten")
+    }
 
     private static func key(_ url: URL) -> String {
         url.standardizedFileURL.resolvingSymlinksInPath().path
@@ -44,8 +68,8 @@ class FolderAccessManager {
         // Already have a valid bookmark for it or a parent folder?
         if let granted = grantedKey(covering: directory), let data = bookmarks[granted] {
             var stale = false
-            if (try? URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &stale)) != nil,
-               !stale {
+            if let resolved = try? URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &stale),
+               Self.key(resolved) == granted || !stale {
                 DebugLog.info("FolderAccess: already granted for \(key) via \(granted)")
                 return true
             }
@@ -92,7 +116,13 @@ class FolderAccessManager {
         var stale = false
         guard let resolved = try? URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &stale) else { return (nil, false) }
         let started = resolved.startAccessingSecurityScopedResource()
-        DebugLog.info("FolderAccess startAccessing: \(granted), started=\(started)")
+        // Folder moved/renamed since the bookmark was made — refresh it while we have access.
+        if stale, started,
+           let fresh = try? resolved.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil) {
+            bookmarks[granted] = nil
+            bookmarks[Self.key(resolved)] = fresh
+        }
+        DebugLog.info("FolderAccess startAccessing: \(granted), started=\(started), stale=\(stale)")
         return (resolved, started)
     }
 

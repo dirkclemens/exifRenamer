@@ -75,6 +75,7 @@ Naming styles are defined as format strings with placeholders:
 | `%h` | Hour (24h) | `14` |
 | `%m` | Minute | `30` |
 | `%s` | Second | `05` |
+| `%ms` | Milliseconds (burst shots) | `120` |
 | `%C` | Counter on duplicates | `_01` |
 | `%F` | File extension (without dot) | `jpg` |
 | `%make` | Camera make | `Canon` |

@@ -29,6 +29,9 @@ class AppViewModel {
     var conflictStrategy: ConflictStrategy
     var createFolders: Bool = false
     var isProcessing: Bool = false
+    var isLoading: Bool = false
+    var loadedCount: Int = 0
+    var loadingTotal: Int = 0
     var processedCount: Int = 0
     var processingTotal: Int = 0
     var errorMessage: String?
@@ -53,6 +56,7 @@ class AppViewModel {
 
     var canRename: Bool {
         !isProcessing
+            && !isLoading
             && selectedStyle != nil
             && !pendingPhotos.isEmpty
             && !(useCustomFolder && customFolderURL == nil)
@@ -65,16 +69,64 @@ class AppViewModel {
         selectedStyleID = styles.first?.id
     }
 
-    func addPhotos(urls: [URL]) {
-        var known = Set(photos.map { $0.url.standardizedFileURL })
-        var new: [Photo] = []
-        for url in urls where known.insert(url.standardizedFileURL).inserted {
-            let photo = Photo(url: url)
-            photo.exifData = EXIFReader.read(url: url)
-            new.append(photo)
+    /// Adds dropped/chosen files and folders. Folder scanning, bookmark creation and EXIF
+    /// reading run in parallel off the main thread; the UI shows progress meanwhile.
+    func addItems(urls: [URL]) async {
+        // A dropped/chosen folder carries folder-level access — remember it so renaming
+        // in place needs no extra permission dialog.
+        for url in urls where MediaScanner.isDirectory(url) {
+            FolderAccessManager.shared.registerGranted(directory: url)
         }
+        let files = await Task.detached(priority: .userInitiated) { MediaScanner.imageFiles(in: urls) }.value
+
+        var known = Set(photos.map { $0.url.standardizedFileURL })
+        let newURLs = files.filter { known.insert($0.standardizedFileURL).inserted }
+        DebugLog.info("addItems: items=\(urls.count), images=\(files.count), new=\(newURLs.count)")
+        guard !newURLs.isEmpty else { return }
+
+        isLoading = true
+        loadedCount = 0
+        loadingTotal = newURLs.count
+        defer { isLoading = false }
+
+        let loaded = await loadMetadata(newURLs)
+
+        // Another add may have finished in the meantime — dedupe again.
+        let present = Set(photos.map { $0.url.standardizedFileURL })
+        let new = loaded
+            .filter { !present.contains($0.url.standardizedFileURL) }
+            .map { item -> Photo in
+                let p = Photo(url: item.url, bookmarkData: item.bookmark)
+                p.exifData = item.exif
+                return p
+            }
         photos.append(contentsOf: new)
         refreshProposedNames()
+    }
+
+    private struct LoadedItem: Sendable { let url: URL; let exif: EXIFData; let bookmark: Data? }
+
+    /// Reads EXIF + creates bookmarks with bounded parallelism, keeping input order.
+    private func loadMetadata(_ urls: [URL]) async -> [LoadedItem] {
+        await withTaskGroup(of: (Int, LoadedItem).self) { group in
+            var results = [LoadedItem?](repeating: nil, count: urls.count)
+            let limit = max(2, ProcessInfo.processInfo.activeProcessorCount)
+            var next = 0
+            func enqueue() {
+                let i = next, url = urls[i]
+                group.addTask {
+                    (i, LoadedItem(url: url, exif: EXIFReader.read(url: url), bookmark: Photo.makeBookmark(for: url)))
+                }
+                next += 1
+            }
+            while next < min(limit, urls.count) { enqueue() }
+            for await (i, item) in group {
+                results[i] = item
+                loadedCount += 1
+                if next < urls.count { enqueue() }
+            }
+            return results.compactMap { $0 }
+        }
     }
 
     func removePhotos(ids: Set<UUID>) {

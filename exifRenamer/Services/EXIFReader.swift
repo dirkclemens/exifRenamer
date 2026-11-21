@@ -1,7 +1,7 @@
 import Foundation
 import ImageIO
 
-struct EXIFReader {
+nonisolated struct EXIFReader {   // thread-safe, used from background tasks
     static func read(url: URL) -> EXIFData {
         var data = EXIFData()
         data.fileExtension = url.pathExtension.lowercased()
@@ -34,7 +34,22 @@ struct EXIFReader {
         ]
         data.captureDate = candidates.lazy.compactMap { $0.flatMap { Self.parseEXIFDate($0) } }.first
             ?? fileDate(of: url)
+
+        let subsecKeys = [kCGImagePropertyExifSubsecTimeOriginal, kCGImagePropertyExifSubsecTimeDigitized, kCGImagePropertyExifSubsecTime]
+        data.milliseconds = subsecKeys.lazy
+            .compactMap { exif?[$0 as String] as? String }
+            .compactMap { Self.parseSubseconds($0) }
+            .first
         return data
+    }
+
+    /// SubSecTime is a string of fractional-second digits ("5" = .5 s, "07" = .07 s, "123" = .123 s).
+    /// Normalized to milliseconds (0…999).
+    static func parseSubseconds(_ string: String) -> Int? {
+        let digits = string.trimmingCharacters(in: .whitespaces).prefix { $0.isASCII && $0.isNumber }
+        guard !digits.isEmpty else { return nil }
+        let ms = String(digits.prefix(3)).padding(toLength: 3, withPad: "0", startingAt: 0)
+        return Int(ms)
     }
 
     /// Parses `"YYYY:MM:DD HH:MM:SS"` (also tolerates `-` as date separator) without a

@@ -74,6 +74,7 @@ struct FormatEngine {
         case .hour:    return exif.hour
         case .minute:  return exif.minute
         case .second:  return exif.second
+        case .millisecond: return exif.millisecond
         case .ext:     return exif.fileExtension
         case .counter: return counter.map { counterSuffix($0) } ?? ""
         }

@@ -16,9 +16,16 @@ struct DropZoneView: View {
                 Image(systemName: "photo.on.rectangle.angled")
                     .font(.system(size: 40))
                     .foregroundStyle(.secondary)
-                Text("Drop photos or folders here")
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
+                if vm.isLoading {
+                    ProgressView(value: Double(vm.loadedCount), total: Double(max(vm.loadingTotal, 1))) {
+                        Text("Reading metadata… \(vm.loadedCount)/\(vm.loadingTotal)")
+                    }
+                    .frame(maxWidth: 260)
+                } else {
+                    Text("Drop photos or folders here")
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                }
                 Button("Choose files…") { openPanel() }
                     .buttonStyle(.borderedProminent)
             }
@@ -59,9 +66,8 @@ struct DropZoneView: View {
 
         group.notify(queue: .main) {
             let urls = collector.urls
-            let images = Self.imageFiles(in: urls)
-            DebugLog.info("Drop complete: urls=\(urls.count), images=\(images.count)")
-            vm.addPhotos(urls: images)
+            DebugLog.info("Drop complete: urls=\(urls.count)")
+            Task { await vm.addItems(urls: urls) }
         }
 
         return true
@@ -75,39 +81,9 @@ struct DropZoneView: View {
         panel.allowedContentTypes = [.image, .folder]
         if panel.runModal() == .OK {
             DebugLog.info("OpenPanel selected: \(panel.urls.count) items")
-            vm.addPhotos(urls: Self.imageFiles(in: panel.urls))
+            let urls = panel.urls
+            Task { await vm.addItems(urls: urls) }
         }
-    }
-
-    /// Expands folders (recursively, skipping hidden files and packages) and keeps image files.
-    /// A dropped/chosen folder also grants folder-level write access, which is registered so
-    /// renaming in place doesn't need an extra permission dialog.
-    static func imageFiles(in urls: [URL]) -> [URL] {
-        var result: [URL] = []
-        for url in urls {
-            let isDir = (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory ?? false
-            if isDir {
-                FolderAccessManager.shared.registerGranted(directory: url)
-                let keys: [URLResourceKey] = [.isRegularFileKey]
-                guard let e = FileManager.default.enumerator(
-                    at: url, includingPropertiesForKeys: keys,
-                    options: [.skipsHiddenFiles, .skipsPackageDescendants]
-                ) else { continue }
-                for case let file as URL in e where isImage(file) {
-                    result.append(file)
-                }
-            } else if isImage(url) {
-                result.append(url)
-            }
-        }
-        return result.sorted { $0.path.localizedStandardCompare($1.path) == .orderedAscending }
-    }
-
-    /// Uses the system type database, so every RAW format macOS knows (ORF, PEF, SRW, …),
-    /// HEIF, WebP, AVIF etc. is accepted — not just a hard-coded extension list.
-    private static func isImage(_ url: URL) -> Bool {
-        guard let type = UTType(filenameExtension: url.pathExtension) else { return false }
-        return type.conforms(to: .image)
     }
 }
 

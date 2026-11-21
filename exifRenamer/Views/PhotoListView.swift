@@ -33,7 +33,6 @@ struct PhotoListView: View {
         case .pending:         Label("Pending",  systemImage: "clock").foregroundStyle(.secondary)
         case .renamed:         Label("Done",     systemImage: "checkmark.circle.fill").foregroundStyle(.green)
         case .skipped:         Label("Skipped",  systemImage: "forward.fill").foregroundStyle(.orange)
-        case .conflict:        Label("Conflict", systemImage: "exclamationmark.triangle.fill").foregroundStyle(.yellow)
         case .failed(let msg): Label(msg,        systemImage: "xmark.circle.fill").foregroundStyle(.red).help(msg)
         }
     }
