@@ -15,14 +15,23 @@ struct ContentView: View {
                 StyleSelectorView()
                 Spacer()
                 if !vm.photos.isEmpty {
+                    if vm.isProcessing {
+                        ProgressView(value: Double(vm.processedCount), total: Double(max(vm.processingTotal, 1)))
+                            .frame(width: 120)
+                        Text("\(vm.processedCount)/\(vm.processingTotal)")
+                            .monospacedDigit()
+                            .foregroundStyle(.secondary)
+                    }
                     Button("Clear", role: .destructive) { vm.clearAll() }
+                        .disabled(vm.isProcessing)
                     Button {
                         Task { await vm.renameAll() }
                     } label: {
                         Label(vm.isProcessing ? "Renaming…" : "Rename", systemImage: "pencil.and.list.clipboard")
                     }
                     .buttonStyle(.borderedProminent)
-                    .disabled(vm.isProcessing || vm.selectedStyle == nil)
+                    .keyboardShortcut(.return, modifiers: .command)
+                    .disabled(!vm.canRename)
                 }
             }
             .padding([.horizontal, .top])

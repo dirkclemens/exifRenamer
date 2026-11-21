@@ -20,6 +20,7 @@ struct exifRenamerApp: App {
         }
         Settings {
             SettingsView()
+                .environment(vm)
         }
     }
 }

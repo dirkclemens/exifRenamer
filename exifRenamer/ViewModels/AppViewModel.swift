@@ -15,6 +15,8 @@ enum ConflictStrategy: String, CaseIterable, Codable {
         case .autoNumber: return "Auto-number"
         }
     }
+
+    static let defaultsKey = "defaultConflictStrategy"
 }
 
 @Observable
@@ -22,81 +24,145 @@ class AppViewModel {
     var photos: [Photo] = []
     var styles: [NamingStyle] = []
     var selectedStyleID: UUID?
-    var outputMode: OutputMode = .sameFolder
-    var conflictStrategy: ConflictStrategy = .autoNumber
+    var useCustomFolder: Bool = false
+    var customFolderURL: URL?
+    var conflictStrategy: ConflictStrategy
     var createFolders: Bool = false
     var isProcessing: Bool = false
+    var processedCount: Int = 0
+    var processingTotal: Int = 0
     var errorMessage: String?
 
     var selectedStyle: NamingStyle? {
         styles.first { $0.id == selectedStyleID }
     }
 
+    var outputMode: OutputMode {
+        if useCustomFolder, let url = customFolderURL { return .customFolder(url) }
+        return .sameFolder
+    }
+
+    /// Subfolders are only created if the style actually has a folder pattern.
+    var effectiveCreateFolders: Bool {
+        createFolders && !(selectedStyle?.folderFormatString ?? "").isEmpty
+    }
+
+    var pendingPhotos: [Photo] {
+        photos.filter { if case .renamed = $0.status { return false } else { return true } }
+    }
+
+    var canRename: Bool {
+        !isProcessing
+            && selectedStyle != nil
+            && !pendingPhotos.isEmpty
+            && !(useCustomFolder && customFolderURL == nil)
+    }
+
     init() {
+        let raw = UserDefaults.standard.string(forKey: ConflictStrategy.defaultsKey) ?? ""
+        conflictStrategy = ConflictStrategy(rawValue: raw) ?? .autoNumber
         styles = StyleStore.shared.load()
         selectedStyleID = styles.first?.id
     }
 
     func addPhotos(urls: [URL]) {
-        let existing = Set(photos.map { $0.url })
-        let new = urls.filter { !existing.contains($0) }.map { Photo(url: $0) }
-        for photo in new {
-            photo.exifData = EXIFReader.read(url: photo.url)
+        var known = Set(photos.map { $0.url.standardizedFileURL })
+        var new: [Photo] = []
+        for url in urls where known.insert(url.standardizedFileURL).inserted {
+            let photo = Photo(url: url)
+            photo.exifData = EXIFReader.read(url: url)
+            new.append(photo)
         }
         photos.append(contentsOf: new)
         refreshProposedNames()
     }
 
-    func removePhoto(_ photo: Photo) {
-        photos.removeAll { $0.id == photo.id }
+    func removePhotos(ids: Set<UUID>) {
+        photos.removeAll { ids.contains($0.id) }
+        refreshProposedNames()   // counters may no longer be needed
     }
 
     func clearAll() {
         photos.removeAll()
+        errorMessage = nil
     }
 
+    /// Generates names for all photos. Names are guaranteed to be unique within the batch:
+    /// colliding names get a counter (via %C, or appended before the extension if the
+    /// format has no %C). Counters follow capture time, then original file name.
     func refreshProposedNames() {
         guard let style = selectedStyle else { return }
-        // First pass — build base names without counter
+        let format = style.formatString
+        let hasCounter = FormatEngine.containsCounter(format)
+
+        // First pass — base names without counter
         var baseNames: [UUID: String] = [:]
         for photo in photos {
-            let base = FormatEngine.resolve(format: style.formatString, exif: photo.exifData ?? EXIFData(), counter: nil)
-            baseNames[photo.id] = base
+            baseNames[photo.id] = FormatEngine.fileName(format: format, exif: photo.exifData ?? EXIFData(), counter: nil)
         }
-        // Detect collisions and inject counter
+
+        // Detect collisions (case-insensitive, like APFS/HFS+ default volumes)
         var counts: [String: Int] = [:]
-        for name in baseNames.values { counts[name, default: 0] += 1 }
+        for name in baseNames.values { counts[name.lowercased(), default: 0] += 1 }
+
+        let ordered = photos.sorted {
+            let a = $0.exifData?.sortKey ?? "", b = $1.exifData?.sortKey ?? ""
+            return a != b ? a < b : $0.originalName.localizedStandardCompare($1.originalName) == .orderedAscending
+        }
         var seen: [String: Int] = [:]
-        for photo in photos {
+        for photo in ordered {
             let base = baseNames[photo.id] ?? photo.originalName
-            if counts[base, default: 0] > 1 {
-                seen[base, default: 0] += 1
-                photo.proposedName = FormatEngine.resolve(format: style.formatString, exif: photo.exifData ?? EXIFData(), counter: seen[base])
+            let newName: String
+            if counts[base.lowercased(), default: 0] > 1 {
+                seen[base.lowercased(), default: 0] += 1
+                let n = seen[base.lowercased()]!
+                if hasCounter {
+                    newName = FormatEngine.fileName(format: format, exif: photo.exifData ?? EXIFData(), counter: n)
+                } else {
+                    let ext = (base as NSString).pathExtension
+                    let stem = (base as NSString).deletingPathExtension
+                    newName = stem + FormatEngine.counterSuffix(n) + (ext.isEmpty ? "" : ".\(ext)")
+                }
             } else {
-                photo.proposedName = base
+                newName = base
+            }
+            if photo.proposedName != newName {
+                photo.proposedName = newName
+                photo.status = .pending   // name changed → can be renamed again
             }
         }
     }
 
-    @MainActor
     func renameAll() async {
-        guard let style = selectedStyle else { return }
+        guard let style = selectedStyle, canRename else { return }
+        let batch = pendingPhotos           // snapshot: the list may change while we work
         isProcessing = true
+        processedCount = 0
+        processingTotal = batch.count
+        errorMessage = nil
         defer { isProcessing = false }
 
         let results = await RenameService.process(
-            photos: photos,
+            photos: batch,
             style: style,
             outputMode: outputMode,
             conflictStrategy: conflictStrategy,
-            createFolders: createFolders
+            createFolders: effectiveCreateFolders,
+            progress: { [weak self] done in self?.processedCount = done }
         )
-        for (photo, result) in zip(photos, results) {
+
+        var failed = 0, skipped = 0
+        for (photo, result) in zip(batch, results) {
             switch result {
-            case .success:      photo.status = .renamed
-            case .skipped:      photo.status = .skipped
-            case .failed(let e): photo.status = .failed(e.localizedDescription)
+            case .success:       photo.status = .renamed
+            case .skipped:       photo.status = .skipped; skipped += 1
+            case .failed(let e): photo.status = .failed(e.localizedDescription); failed += 1
             }
+        }
+        if failed > 0 {
+            errorMessage = "\(failed) of \(batch.count) file(s) could not be processed. See the Status column for details."
+        } else if skipped > 0 {
+            errorMessage = "\(skipped) of \(batch.count) file(s) were skipped."
         }
     }
 }

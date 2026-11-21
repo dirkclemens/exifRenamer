@@ -1,7 +1,7 @@
 import Foundation
 import OSLog
 
-enum DebugLog {
+nonisolated enum DebugLog {   // Logger is thread-safe; callable from any thread
     private static let logger = Logger(subsystem: "exifRenamer", category: "debug")
 
     static func info(_ message: String) {

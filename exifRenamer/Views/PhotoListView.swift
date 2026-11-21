@@ -16,12 +16,15 @@ struct PhotoListView: View {
             .width(min: 120, ideal: 140)
         }
         .contextMenu(forSelectionType: UUID.self, menu: { ids in
-            Button("Remove", role: .destructive) {
-                ids.forEach { id in
-                    if let p = vm.photos.first(where: { $0.id == id }) { vm.removePhoto(p) }
-                }
+            Button("Remove from List", role: .destructive) {
+                vm.removePhotos(ids: ids)
+                selection.subtract(ids)
             }
         })
+        .onDeleteCommand {             // ⌫ removes selected rows from the list (files are untouched)
+            vm.removePhotos(ids: selection)
+            selection.removeAll()
+        }
     }
 
     @ViewBuilder
@@ -31,7 +34,7 @@ struct PhotoListView: View {
         case .renamed:         Label("Done",     systemImage: "checkmark.circle.fill").foregroundStyle(.green)
         case .skipped:         Label("Skipped",  systemImage: "forward.fill").foregroundStyle(.orange)
         case .conflict:        Label("Conflict", systemImage: "exclamationmark.triangle.fill").foregroundStyle(.yellow)
-        case .failed(let msg): Label(msg,        systemImage: "xmark.circle.fill").foregroundStyle(.red)
+        case .failed(let msg): Label(msg,        systemImage: "xmark.circle.fill").foregroundStyle(.red).help(msg)
         }
     }
 }

@@ -16,7 +16,7 @@ struct DropZoneView: View {
                 Image(systemName: "photo.on.rectangle.angled")
                     .font(.system(size: 40))
                     .foregroundStyle(.secondary)
-                Text("Drop photos here")
+                Text("Drop photos or folders here")
                     .font(.headline)
                     .foregroundStyle(.secondary)
                 Button("Choose files…") { openPanel() }
@@ -34,7 +34,8 @@ struct DropZoneView: View {
     private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
         DebugLog.info("Drop started: providers=\(providers.count)")
 
-        var urls: [URL] = []
+        // loadItem calls back on arbitrary background queues — collect thread-safely.
+        let collector = URLCollector()
         let group = DispatchGroup()
 
         for provider in providers {
@@ -46,29 +47,21 @@ struct DropZoneView: View {
                     DebugLog.error("Drop loadItem error: \(error.localizedDescription)")
                     return
                 }
-
                 if let u = item as? URL {
-                    DebugLog.info("Drop item URL: \(u.path)")
-                    urls.append(u)
-                    return
+                    collector.append(u)
+                } else if let data = item as? Data, let parsed = URL(dataRepresentation: data, relativeTo: nil) {
+                    collector.append(parsed)
+                } else {
+                    DebugLog.error("Drop item unsupported payload type")
                 }
-
-                if let data = item as? Data, let parsed = URL(dataRepresentation: data, relativeTo: nil) {
-                    DebugLog.info("Drop item Data->URL: \(parsed.path)")
-                    urls.append(parsed)
-                    return
-                }
-
-                DebugLog.error("Drop item unsupported payload type")
             }
         }
 
         group.notify(queue: .main) {
-            let imageExts = Set(["jpg","jpeg","png","tiff","tif","heic","raw","cr2","cr3","nef","arw","dng","raf","rw2"])
-            let filtered = urls.filter { imageExts.contains($0.pathExtension.lowercased()) }
-            DebugLog.info("Drop complete: urls=\(urls.count), filteredImages=\(filtered.count)")
-            filtered.forEach { DebugLog.info("Drop accepted: \($0.path)") }
-            vm.addPhotos(urls: filtered)
+            let urls = collector.urls
+            let images = Self.imageFiles(in: urls)
+            DebugLog.info("Drop complete: urls=\(urls.count), images=\(images.count)")
+            vm.addPhotos(urls: images)
         }
 
         return true
@@ -77,14 +70,53 @@ struct DropZoneView: View {
     private func openPanel() {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
-        panel.canChooseDirectories = false
-        panel.allowedContentTypes = [.image]
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = true
+        panel.allowedContentTypes = [.image, .folder]
         if panel.runModal() == .OK {
-            DebugLog.info("OpenPanel selected: \(panel.urls.count) files")
-            panel.urls.forEach { DebugLog.info("OpenPanel file: \($0.path)") }
-            vm.addPhotos(urls: panel.urls)
+            DebugLog.info("OpenPanel selected: \(panel.urls.count) items")
+            vm.addPhotos(urls: Self.imageFiles(in: panel.urls))
         }
     }
+
+    /// Expands folders (recursively, skipping hidden files and packages) and keeps image files.
+    /// A dropped/chosen folder also grants folder-level write access, which is registered so
+    /// renaming in place doesn't need an extra permission dialog.
+    static func imageFiles(in urls: [URL]) -> [URL] {
+        var result: [URL] = []
+        for url in urls {
+            let isDir = (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory ?? false
+            if isDir {
+                FolderAccessManager.shared.registerGranted(directory: url)
+                let keys: [URLResourceKey] = [.isRegularFileKey]
+                guard let e = FileManager.default.enumerator(
+                    at: url, includingPropertiesForKeys: keys,
+                    options: [.skipsHiddenFiles, .skipsPackageDescendants]
+                ) else { continue }
+                for case let file as URL in e where isImage(file) {
+                    result.append(file)
+                }
+            } else if isImage(url) {
+                result.append(url)
+            }
+        }
+        return result.sorted { $0.path.localizedStandardCompare($1.path) == .orderedAscending }
+    }
+
+    /// Uses the system type database, so every RAW format macOS knows (ORF, PEF, SRW, …),
+    /// HEIF, WebP, AVIF etc. is accepted — not just a hard-coded extension list.
+    private static func isImage(_ url: URL) -> Bool {
+        guard let type = UTType(filenameExtension: url.pathExtension) else { return false }
+        return type.conforms(to: .image)
+    }
+}
+
+/// Thread-safe URL accumulator for NSItemProvider callbacks.
+nonisolated private final class URLCollector: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storage: [URL] = []
+    func append(_ url: URL) { lock.lock(); storage.append(url); lock.unlock() }
+    var urls: [URL] { lock.lock(); defer { lock.unlock() }; return storage }
 }
 
 private struct AdaptiveHeight: ViewModifier {

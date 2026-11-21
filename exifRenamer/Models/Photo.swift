@@ -13,39 +13,21 @@ class Photo: Identifiable {
     var proposedName: String = ""
     var status: PhotoStatus = .pending
 
-    var dirBookmarkData: Data?   // security-scoped bookmark for parent directory
-
     init(url: URL) {
         self.url = url
         self.bookmarkData = Self.makeBookmark(for: url)
-        self.dirBookmarkData = Self.makeBookmark(for: url.deletingLastPathComponent())
-        DebugLog.info("Photo init: \(url.path), fileBookmark=\(self.bookmarkData != nil), dirBookmark=\(self.dirBookmarkData != nil)")
+        DebugLog.info("Photo init: \(url.path), fileBookmark=\(self.bookmarkData != nil)")
     }
 
     var originalName: String { url.lastPathComponent }
 
-    func withScopedAccess<T>(_ work: (URL) throws -> T) throws -> T {
+    /// Runs `work` with security-scoped access to the (bookmark-resolved, i.e. current) file URL.
+    /// Folder-level access is handled separately by `FolderAccessManager`.
+    func withScopedAccess<T>(_ work: (URL) async throws -> T) async throws -> T {
         let (resolved, isScoped) = resolvedURL()
-        DebugLog.info("withScopedAccess: original=\(url.path), resolved=\(resolved.path), isScoped=\(isScoped)")
-
-        // Also resolve the parent directory bookmark — moveItem needs write access to the folder
-        var dirStale = false
-        let dirResolved: URL?
-        if let data = dirBookmarkData {
-            dirResolved = try? URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &dirStale)
-        } else {
-            dirResolved = nil
-        }
-
-        let startedDir  = dirResolved.map  { $0.startAccessingSecurityScopedResource() } ?? false
         let startedFile = isScoped ? resolved.startAccessingSecurityScopedResource() : false
-        DebugLog.info("startAccessing: file=\(resolved.lastPathComponent), fileStarted=\(startedFile), dirStarted=\(startedDir)")
-
-        defer {
-            if startedFile { resolved.stopAccessingSecurityScopedResource() }
-            if startedDir  { dirResolved?.stopAccessingSecurityScopedResource() }
-            DebugLog.info("stopAccessing: \(resolved.lastPathComponent)")
-        }
+        DebugLog.info("withScopedAccess: original=\(url.path), resolved=\(resolved.path), isScoped=\(isScoped), started=\(startedFile)")
+        defer { if startedFile { resolved.stopAccessingSecurityScopedResource() } }
 
         if isScoped && !startedFile {
             let msg = "Security-scoped access could not be started for \(resolved.lastPathComponent)."
@@ -53,7 +35,7 @@ class Photo: Identifiable {
             throw NSError(domain: "ExifRenamer", code: 1, userInfo: [NSLocalizedDescriptionKey: msg])
         }
 
-        return try work(resolved)
+        return try await work(resolved)
     }
 
     /// Resolves a fresh security-scoped URL from the stored bookmark (or falls back to url).

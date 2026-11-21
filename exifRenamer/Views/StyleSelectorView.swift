@@ -2,8 +2,8 @@ import SwiftUI
 
 struct StyleSelectorView: View {
     @Environment(AppViewModel.self) var vm
-    @State private var showEditor = false
     @State private var editingStyle: NamingStyle?
+    @State private var confirmDelete = false
 
     private static let lastStyleKey = "lastSelectedStyleID"
 
@@ -11,13 +11,7 @@ struct StyleSelectorView: View {
         HStack {
             Picker("Style:", selection: Binding(
                 get: { vm.selectedStyleID },
-                set: {
-                    vm.selectedStyleID = $0
-                    vm.refreshProposedNames()
-                    if let id = $0 {
-                        UserDefaults.standard.set(id.uuidString, forKey: Self.lastStyleKey)
-                    }
-                }
+                set: { select($0) }
             )) {
                 ForEach(vm.styles) { style in
                     Text(style.name).tag(Optional(style.id))
@@ -26,35 +20,74 @@ struct StyleSelectorView: View {
             .labelsHidden()
             .frame(maxWidth: 200)
 
-            Button { editingStyle = vm.selectedStyle ?? NamingStyle(name: "", formatString: ""); showEditor = true } label: {
-                Image(systemName: "pencil")
+            Button { editingStyle = vm.selectedStyle } label: {
+                Image(systemName: vm.selectedStyle?.isBuiltIn == true ? "eye" : "pencil")
             }
-            .help("Edit style")
+            .help(vm.selectedStyle?.isBuiltIn == true ? "View style" : "Edit style")
+            .disabled(vm.selectedStyle == nil)
 
-            Button { editingStyle = NamingStyle(name: "New Style", formatString: "%Y%M%D_%h%m%s%C.%F"); showEditor = true } label: {
+            Menu {
+                Button("New Style…") {
+                    editingStyle = NamingStyle(name: "New Style", formatString: "%Y%M%D_%h%m%s%C.%F")
+                }
+                Button("Duplicate Style…") { duplicateSelected() }
+                    .disabled(vm.selectedStyle == nil)
+                Divider()
+                Button("Delete Style…", role: .destructive) { confirmDelete = true }
+                    .disabled(vm.selectedStyle == nil || vm.selectedStyle?.isBuiltIn == true)
+            } label: {
                 Image(systemName: "plus")
             }
-            .help("New style")
+            .menuIndicator(.visible)
+            .fixedSize()
+            .help("New, duplicate or delete style")
         }
         .fixedSize(horizontal: false, vertical: true)
         .onAppear { restoreLastStyle() }
-        .sheet(isPresented: $showEditor) {
-            if let s = editingStyle {
-                StyleEditorView(style: s) { updated in
-                    if let idx = vm.styles.firstIndex(where: { $0.id == updated.id }) {
-                        vm.styles[idx] = updated
-                    } else {
-                        vm.styles.append(updated)
-                        vm.selectedStyleID = updated.id
-                    }
-                    StyleStore.shared.save(vm.styles)
-                    vm.refreshProposedNames()
-                    if let id = vm.selectedStyleID {
-                        UserDefaults.standard.set(id.uuidString, forKey: Self.lastStyleKey)
-                    }
-                }
+        // sheet(item:) guarantees the sheet always gets the style it was opened with
+        .sheet(item: $editingStyle) { style in
+            StyleEditorView(style: style, previewEXIF: vm.photos.first?.exifData) { updated in
+                save(updated)
             }
         }
+        .confirmationDialog("Delete style \"\(vm.selectedStyle?.name ?? "")\"?",
+                            isPresented: $confirmDelete) {
+            Button("Delete", role: .destructive) { deleteSelected() }
+        }
+    }
+
+    private func select(_ id: UUID?) {
+        vm.selectedStyleID = id
+        vm.refreshProposedNames()
+        if let id {
+            UserDefaults.standard.set(id.uuidString, forKey: Self.lastStyleKey)
+        }
+    }
+
+    private func save(_ updated: NamingStyle) {
+        if let idx = vm.styles.firstIndex(where: { $0.id == updated.id }) {
+            vm.styles[idx] = updated
+        } else {
+            vm.styles.append(updated)
+        }
+        StyleStore.shared.save(vm.styles)
+        select(updated.id)
+    }
+
+    private func duplicateSelected() {
+        guard let s = vm.selectedStyle else { return }
+        var copy = s
+        copy.id = UUID()
+        copy.name = "\(s.name) Copy"
+        copy.isBuiltIn = false
+        editingStyle = copy
+    }
+
+    private func deleteSelected() {
+        guard let s = vm.selectedStyle, !s.isBuiltIn else { return }
+        vm.styles.removeAll { $0.id == s.id }
+        StyleStore.shared.save(vm.styles)
+        select(vm.styles.first?.id)
     }
 
     private func restoreLastStyle() {

@@ -48,7 +48,7 @@ enum UpdateChecker {
     }
 }
 
-private struct UpdateCheckResponse: Decodable {
+nonisolated private struct UpdateCheckResponse: Decodable {
     let app: String?
     let currentVersion: String?
     let latestVersion: String?

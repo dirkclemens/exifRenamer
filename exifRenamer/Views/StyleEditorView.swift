@@ -3,23 +3,40 @@ import SwiftUI
 struct StyleEditorView: View {
     @State private var style: NamingStyle
     @State private var useFolderPattern: Bool
+    private let previewEXIF: EXIFData
     var onSave: (NamingStyle) -> Void
     @Environment(\.dismiss) private var dismiss
 
-    // Sample EXIF for preview
-    private static var sampleEXIF: EXIFData = {
+    // Synthetic EXIF for preview when no photo is loaded
+    private static let sampleEXIF: EXIFData = {
         var e = EXIFData()
-        let df = DateFormatter(); df.dateFormat = "yyyy:MM:dd HH:mm:ss"
-        e.dateTimeOriginal = df.date(from: "2026:04:26 14:30:00")
+        e.captureDate = DateComponents(year: 2026, month: 4, day: 26, hour: 14, minute: 30, second: 0)
         e.make = "Canon"; e.model = "EOS R5"; e.lensModel = "RF 24-70mm"
         e.iso = 400; e.fileExtension = "jpg"
         return e
     }()
 
-    init(style: NamingStyle, onSave: @escaping (NamingStyle) -> Void) {
+    /// - Parameter previewEXIF: EXIF of a real photo (e.g. the first dropped one); falls back to a sample.
+    init(style: NamingStyle, previewEXIF: EXIFData? = nil, onSave: @escaping (NamingStyle) -> Void) {
         _style = State(initialValue: style)
         _useFolderPattern = State(initialValue: style.folderFormatString != nil)
+        self.previewEXIF = previewEXIF ?? Self.sampleEXIF
         self.onSave = onSave
+    }
+
+    private var trimmedName: String { style.name.trimmingCharacters(in: .whitespaces) }
+
+    private var validationMessage: String? {
+        if trimmedName.isEmpty { return "Please enter a name." }
+        if style.formatString.trimmingCharacters(in: .whitespaces).isEmpty { return "Please enter a filename format." }
+        if FormatEngine.preview(format: style.formatString, exif: previewEXIF).isEmpty { return "The format produces an empty filename." }
+        if !style.formatString.contains(FormatToken.ext.rawValue) { return "Tip: add .%F to keep the file extension." }
+        return nil
+    }
+
+    private var canSave: Bool {
+        !trimmedName.isEmpty
+            && !FormatEngine.preview(format: style.formatString, exif: previewEXIF).isEmpty
     }
 
     var body: some View {
@@ -41,14 +58,19 @@ struct StyleEditorView: View {
             tokenLegend
 
             LabeledContent("Preview:") {
-                Text(FormatEngine.preview(format: style.formatString, exif: Self.sampleEXIF))
+                Text(FormatEngine.preview(format: style.formatString, exif: previewEXIF))
                     .font(.monospaced(.body)())
                     .foregroundStyle(.secondary)
+                    .textSelection(.enabled)
             }
 
             Divider()
 
             Toggle("Create subfolders using pattern:", isOn: $useFolderPattern)
+                .disabled(style.isBuiltIn)
+                .onChange(of: useFolderPattern) { _, new in
+                    if !new { style.folderFormatString = nil }
+                }
 
             if useFolderPattern {
                 LabeledContent("Folder pattern:") {
@@ -60,28 +82,35 @@ struct StyleEditorView: View {
                     .font(.monospaced(.body)())
                 }
                 LabeledContent("Folder preview:") {
-                    Text(FormatEngine.preview(format: style.folderFormatString ?? "", exif: Self.sampleEXIF))
+                    Text(FormatEngine.folderPreview(format: style.folderFormatString ?? "", exif: previewEXIF))
                         .font(.monospaced(.body)())
                         .foregroundStyle(.secondary)
-                }
-            } else {
-                Color.clear.frame(height: 0).onChange(of: useFolderPattern) { _, new in
-                    if !new { style.folderFormatString = nil }
                 }
             }
 
             Spacer()
 
             HStack {
+                if !style.isBuiltIn, let msg = validationMessage {
+                    Text(msg).font(.caption).foregroundStyle(.secondary)
+                }
                 Spacer()
-                Button("Cancel") { dismiss() }
+                Button(style.isBuiltIn ? "Close" : "Cancel") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
                 if !style.isBuiltIn {
-                    Button("Save") { onSave(style); dismiss() }.buttonStyle(.borderedProminent)
+                    Button("Save") {
+                        style.name = trimmedName
+                        onSave(style)
+                        dismiss()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(!canSave)
                 }
             }
         }
         .padding()
-        .frame(width: 480, height: 460)
+        .frame(width: 480, height: 480)
     }
 
     private var tokenLegend: some View {
