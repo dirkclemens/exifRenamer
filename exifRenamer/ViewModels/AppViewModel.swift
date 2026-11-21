@@ -10,9 +10,9 @@ enum ConflictStrategy: String, CaseIterable, Codable {
     case skip, overwrite, autoNumber
     var label: String {
         switch self {
-        case .skip:       return "Skip"
-        case .overwrite:  return "Overwrite"
-        case .autoNumber: return "Auto-number"
+        case .skip:       return String(localized: "Skip")
+        case .overwrite:  return String(localized: "Overwrite")
+        case .autoNumber: return String(localized: "Auto-number")
         }
     }
 

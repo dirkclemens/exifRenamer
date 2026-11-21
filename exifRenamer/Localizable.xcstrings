@@ -1,0 +1,906 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ Copy" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Kopie"
+          }
+        }
+      }
+    },
+    "%lld change(s) could not be undone." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Änderung(en) konnten nicht rückgängig gemacht werden."
+          }
+        }
+      }
+    },
+    "%lld folder(s) remembered" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Ordner gespeichert"
+          }
+        }
+      }
+    },
+    "%lld of %lld file(s) could not be processed. See the Status column for details." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld von %2$lld Datei(en) konnten nicht verarbeitet werden. Details in der Spalte „Status“."
+          }
+        }
+      }
+    },
+    "%lld of %lld file(s) were skipped." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld von %2$lld Datei(en) wurden übersprungen."
+          }
+        }
+      }
+    },
+    "%lld/%lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "Auto-number" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch nummerieren"
+          }
+        }
+      }
+    },
+    "Available tokens" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verfügbare Platzhalter"
+          }
+        }
+      }
+    },
+    "Camera make" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamerahersteller"
+          }
+        }
+      }
+    },
+    "Camera model" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kameramodell"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abbrechen"
+          }
+        }
+      }
+    },
+    "Choose files…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dateien auswählen …"
+          }
+        }
+      }
+    },
+    "Choose…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auswählen …"
+          }
+        }
+      }
+    },
+    "Clear" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leeren"
+          }
+        }
+      }
+    },
+    "Close" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schließen"
+          }
+        }
+      }
+    },
+    "Counter (when duplicate)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zähler (bei Duplikaten)"
+          }
+        }
+      }
+    },
+    "Create subfolders from EXIF pattern" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unterordner nach EXIF-Muster anlegen"
+          }
+        }
+      }
+    },
+    "Create subfolders using pattern:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unterordner nach Muster anlegen:"
+          }
+        }
+      }
+    },
+    "Day" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag"
+          }
+        }
+      }
+    },
+    "Default conflict strategy:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard bei Namenskonflikten:"
+          }
+        }
+      }
+    },
+    "Delete" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löschen"
+          }
+        }
+      }
+    },
+    "Delete style \"%@\"?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stil „%@“ löschen?"
+          }
+        }
+      }
+    },
+    "Delete Style…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stil löschen …"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fertig"
+          }
+        }
+      }
+    },
+    "Drop photos or folders here" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotos oder Ordner hierher ziehen"
+          }
+        }
+      }
+    },
+    "Duplicate Style…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stil duplizieren …"
+          }
+        }
+      }
+    },
+    "e.g. %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "z. B. %@"
+          }
+        }
+      }
+    },
+    "Edit Style" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stil bearbeiten"
+          }
+        }
+      }
+    },
+    "Edit style" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stil bearbeiten"
+          }
+        }
+      }
+    },
+    "File already exists." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Datei existiert bereits."
+          }
+        }
+      }
+    },
+    "File extension" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dateiendung"
+          }
+        }
+      }
+    },
+    "Filename format:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dateinamenformat:"
+          }
+        }
+      }
+    },
+    "Files are copied into subfolders; originals stay in place." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dateien werden in Unterordner kopiert, die Originale bleiben erhalten."
+          }
+        }
+      }
+    },
+    "Folder pattern:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnermuster:"
+          }
+        }
+      }
+    },
+    "Folder permissions:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnerzugriffe:"
+          }
+        }
+      }
+    },
+    "Folder preview:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnervorschau:"
+          }
+        }
+      }
+    },
+    "Grant Access" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zugriff gewähren"
+          }
+        }
+      }
+    },
+    "Hour (24h)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stunde (24 h)"
+          }
+        }
+      }
+    },
+    "Include sidecar files (.xmp, .aae)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Begleitdateien einbeziehen (.xmp, .aae)"
+          }
+        }
+      }
+    },
+    "ISO" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ISO"
+          }
+        }
+      }
+    },
+    "Lens model" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objektiv"
+          }
+        }
+      }
+    },
+    "Milliseconds" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Millisekunden"
+          }
+        }
+      }
+    },
+    "Minute" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minute"
+          }
+        }
+      }
+    },
+    "Month" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monat"
+          }
+        }
+      }
+    },
+    "Name:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name:"
+          }
+        }
+      }
+    },
+    "New Name" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neuer Name"
+          }
+        }
+      }
+    },
+    "New Style" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neuer Stil"
+          }
+        }
+      }
+    },
+    "New Style…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neuer Stil …"
+          }
+        }
+      }
+    },
+    "New, duplicate or delete style" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stil anlegen, duplizieren oder löschen"
+          }
+        }
+      }
+    },
+    "No access to folder \"%@\"." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Zugriff auf den Ordner „%@“."
+          }
+        }
+      }
+    },
+    "No folder selected" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Ordner ausgewählt"
+          }
+        }
+      }
+    },
+    "No proposed name generated." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es wurde kein neuer Name erzeugt."
+          }
+        }
+      }
+    },
+    "On conflict:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bei Konflikt:"
+          }
+        }
+      }
+    },
+    "Original Name" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ursprünglicher Name"
+          }
+        }
+      }
+    },
+    "Output" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgabe"
+          }
+        }
+      }
+    },
+    "Overwrite" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überschreiben"
+          }
+        }
+      }
+    },
+    "Overwritten files are moved to the Trash. Files of the current batch are never overwritten." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überschriebene Dateien werden in den Papierkorb gelegt. Dateien des aktuellen Durchlaufs werden nie überschrieben."
+          }
+        }
+      }
+    },
+    "Pending" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausstehend"
+          }
+        }
+      }
+    },
+    "Please enter a filename format." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte ein Dateinamenformat eingeben."
+          }
+        }
+      }
+    },
+    "Please enter a name." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte einen Namen eingeben."
+          }
+        }
+      }
+    },
+    "Please grant access to the folder \"%@\" so files in it can be renamed." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte gewähre Zugriff auf den Ordner „%@“, damit Dateien darin umbenannt werden können."
+          }
+        }
+      }
+    },
+    "Preview:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorschau:"
+          }
+        }
+      }
+    },
+    "Reading metadata… %lld/%lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadaten werden gelesen … %1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "Remove from List" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aus Liste entfernen"
+          }
+        }
+      }
+    },
+    "Rename" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umbenennen"
+          }
+        }
+      }
+    },
+    "Rename log:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protokoll:"
+          }
+        }
+      }
+    },
+    "Renaming…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird umbenannt …"
+          }
+        }
+      }
+    },
+    "Reset Folder Permissions" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnerzugriffe zurücksetzen"
+          }
+        }
+      }
+    },
+    "Save" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sichern"
+          }
+        }
+      }
+    },
+    "Save copies to custom folder" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopien in eigenem Ordner speichern"
+          }
+        }
+      }
+    },
+    "Second" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sekunde"
+          }
+        }
+      }
+    },
+    "Security-scoped access could not be started for %@." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Zugriff auf „%@“ konnte nicht gestartet werden."
+          }
+        }
+      }
+    },
+    "Set a folder pattern in the style editor first." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lege zuerst im Stil-Editor ein Ordnermuster fest."
+          }
+        }
+      }
+    },
+    "Show Logs in Finder" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protokolle im Finder zeigen"
+          }
+        }
+      }
+    },
+    "Sidecar files with the same name are renamed or copied together with the photo." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gleichnamige Begleitdateien werden zusammen mit dem Foto umbenannt oder kopiert."
+          }
+        }
+      }
+    },
+    "Skip" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überspringen"
+          }
+        }
+      }
+    },
+    "Skipped" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übersprungen"
+          }
+        }
+      }
+    },
+    "Status" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Status"
+          }
+        }
+      }
+    },
+    "Style name" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name des Stils"
+          }
+        }
+      }
+    },
+    "Style:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stil:"
+          }
+        }
+      }
+    },
+    "The format produces an empty filename." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Format ergibt einen leeren Dateinamen."
+          }
+        }
+      }
+    },
+    "Tip: add %@ to keep the file extension." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipp: %@ anhängen, um die Dateiendung zu behalten."
+          }
+        }
+      }
+    },
+    "Undo" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widerrufen"
+          }
+        }
+      }
+    },
+    "Undo the last rename (⌘Z)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letztes Umbenennen widerrufen (⌘Z)"
+          }
+        }
+      }
+    },
+    "Undone. %lld overwritten file(s) remain in the Trash." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widerrufen. %lld überschriebene Datei(en) bleiben im Papierkorb."
+          }
+        }
+      }
+    },
+    "View style" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stil ansehen"
+          }
+        }
+      }
+    },
+    "View Style (built-in)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stil ansehen (integriert)"
+          }
+        }
+      }
+    },
+    "Write a log file for every rename" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bei jedem Umbenennen eine Protokolldatei schreiben"
+          }
+        }
+      }
+    },
+    "Write failed: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schreiben fehlgeschlagen: %@"
+          }
+        }
+      }
+    },
+    "Year (4-digit)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jahr (4-stellig)"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -27,10 +27,10 @@ struct StyleEditorView: View {
     private var trimmedName: String { style.name.trimmingCharacters(in: .whitespaces) }
 
     private var validationMessage: String? {
-        if trimmedName.isEmpty { return "Please enter a name." }
-        if style.formatString.trimmingCharacters(in: .whitespaces).isEmpty { return "Please enter a filename format." }
-        if FormatEngine.preview(format: style.formatString, exif: previewEXIF).isEmpty { return "The format produces an empty filename." }
-        if !style.formatString.contains(FormatToken.ext.rawValue) { return "Tip: add .%F to keep the file extension." }
+        if trimmedName.isEmpty { return String(localized: "Please enter a name.") }
+        if style.formatString.trimmingCharacters(in: .whitespaces).isEmpty { return String(localized: "Please enter a filename format.") }
+        if FormatEngine.preview(format: style.formatString, exif: previewEXIF).isEmpty { return String(localized: "The format produces an empty filename.") }
+        if !style.formatString.contains(FormatToken.ext.rawValue) { return String(localized: "Tip: add \(".%F") to keep the file extension.") }
         return nil
     }
 
@@ -41,7 +41,7 @@ struct StyleEditorView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(style.isBuiltIn ? "View Style (built-in)" : "Edit Style")
+            Text(style.isBuiltIn ? LocalizedStringKey("View Style (built-in)") : LocalizedStringKey("Edit Style"))
                 .font(.title2).bold()
 
             LabeledContent("Name:") {
@@ -49,7 +49,7 @@ struct StyleEditorView: View {
             }
 
             LabeledContent("Filename format:") {
-                TextField("e.g. %Y%M%D_%h%m%s%C.%F", text: $style.formatString)
+                TextField("e.g. \("%Y%M%D_%h%m%s%C.%F")", text: $style.formatString)
                     .disabled(style.isBuiltIn)
                     .font(.monospaced(.body)())
             }
@@ -74,7 +74,7 @@ struct StyleEditorView: View {
 
             if useFolderPattern {
                 LabeledContent("Folder pattern:") {
-                    TextField("e.g. %Y/%Y-%M-%D", text: Binding(
+                    TextField("e.g. \("%Y/%Y-%M-%D")", text: Binding(
                         get: { style.folderFormatString ?? "" },
                         set: { style.folderFormatString = $0.isEmpty ? nil : $0 }
                     ))
@@ -95,7 +95,7 @@ struct StyleEditorView: View {
                     Text(msg).font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button(style.isBuiltIn ? "Close" : "Cancel") { dismiss() }
+                Button(style.isBuiltIn ? LocalizedStringKey("Close") : LocalizedStringKey("Cancel")) { dismiss() }
                     .keyboardShortcut(.cancelAction)
                 if !style.isBuiltIn {
                     Button("Save") {

@@ -80,8 +80,8 @@ class FolderAccessManager: FolderAccessing {
         DebugLog.info("FolderAccess: requesting access for \(key)")
 
         let panel = NSOpenPanel()
-        panel.message = "Please grant access to the folder \"\(directory.lastPathComponent)\" so files in it can be renamed."
-        panel.prompt = "Grant Access"
+        panel.message = String(localized: "Please grant access to the folder \"\(directory.lastPathComponent)\" so files in it can be renamed.")
+        panel.prompt = String(localized: "Grant Access")
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.canCreateDirectories = false

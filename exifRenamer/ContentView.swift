@@ -32,7 +32,7 @@ struct ContentView: View {
                     Button("Clear", role: .destructive) { vm.clearAll() }
                         .disabled(vm.isProcessing)
                     Button { rename() } label: {
-                        Label(vm.isProcessing ? "Renaming…" : "Rename", systemImage: "pencil.and.list.clipboard")
+                        Label(vm.isProcessing ? LocalizedStringKey("Renaming…") : LocalizedStringKey("Rename"), systemImage: "pencil.and.list.clipboard")
                     }
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.return, modifiers: .command)

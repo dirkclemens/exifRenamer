@@ -17,19 +17,19 @@ enum FormatToken: String, CaseIterable {
 
     var description: String {
         switch self {
-        case .year:    return "Year (4-digit)"
-        case .month:   return "Month"
-        case .day:     return "Day"
-        case .hour:    return "Hour (24h)"
-        case .minute:  return "Minute"
-        case .second:  return "Second"
-        case .millisecond: return "Milliseconds"
-        case .counter: return "Counter (when duplicate)"
-        case .ext:     return "File extension"
-        case .make:    return "Camera make"
-        case .model:   return "Camera model"
-        case .iso:     return "ISO"
-        case .lens:    return "Lens model"
+        case .year:    return String(localized: "Year (4-digit)")
+        case .month:   return String(localized: "Month")
+        case .day:     return String(localized: "Day")
+        case .hour:    return String(localized: "Hour (24h)")
+        case .minute:  return String(localized: "Minute")
+        case .second:  return String(localized: "Second")
+        case .millisecond: return String(localized: "Milliseconds")
+        case .counter: return String(localized: "Counter (when duplicate)")
+        case .ext:     return String(localized: "File extension")
+        case .make:    return String(localized: "Camera make")
+        case .model:   return String(localized: "Camera model")
+        case .iso:     return String(localized: "ISO")
+        case .lens:    return String(localized: "Lens model")
         }
     }
 }

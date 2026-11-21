@@ -23,12 +23,12 @@ struct StyleSelectorView: View {
             Button { editingStyle = vm.selectedStyle } label: {
                 Image(systemName: vm.selectedStyle?.isBuiltIn == true ? "eye" : "pencil")
             }
-            .help(vm.selectedStyle?.isBuiltIn == true ? "View style" : "Edit style")
+            .help(vm.selectedStyle?.isBuiltIn == true ? Text("View style") : Text("Edit style"))
             .disabled(vm.selectedStyle == nil)
 
             Menu {
                 Button("New Style…") {
-                    editingStyle = NamingStyle(name: "New Style", formatString: "%Y%M%D_%h%m%s%C.%F")
+                    editingStyle = NamingStyle(name: String(localized: "New Style"), formatString: "%Y%M%D_%h%m%s%C.%F")
                 }
                 Button("Duplicate Style…") { duplicateSelected() }
                     .disabled(vm.selectedStyle == nil)
@@ -78,7 +78,7 @@ struct StyleSelectorView: View {
         guard let s = vm.selectedStyle else { return }
         var copy = s
         copy.id = UUID()
-        copy.name = "\(s.name) Copy"
+        copy.name = String(localized: "\(s.name) Copy")
         copy.isBuiltIn = false
         editingStyle = copy
     }

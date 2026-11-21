@@ -31,7 +31,7 @@ class Photo: Identifiable {
         defer { if startedFile { resolved.stopAccessingSecurityScopedResource() } }
 
         if isScoped && !startedFile {
-            let msg = "Security-scoped access could not be started for \(resolved.lastPathComponent)."
+            let msg = String(localized: "Security-scoped access could not be started for \(resolved.lastPathComponent).")
             DebugLog.error(msg)
             throw NSError(domain: "ExifRenamer", code: 1, userInfo: [NSLocalizedDescriptionKey: msg])
         }

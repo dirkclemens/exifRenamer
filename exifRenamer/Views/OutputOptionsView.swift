@@ -11,9 +11,11 @@ struct OutputOptionsView: View {
 
                 if vm.useCustomFolder {
                     HStack {
-                        Text(vm.customFolderURL?.path ?? "No folder selected")
-                            .foregroundStyle(vm.customFolderURL == nil ? .red : .secondary)
-                            .lineLimit(1).truncationMode(.middle)
+                        Group {
+                            if let url = vm.customFolderURL { Text(verbatim: url.path) } else { Text("No folder selected") }
+                        }
+                        .foregroundStyle(vm.customFolderURL == nil ? .red : .secondary)
+                        .lineLimit(1).truncationMode(.middle)
                         Spacer()
                         Button("Choose…") { chooseFolder() }
                     }
@@ -22,8 +24,8 @@ struct OutputOptionsView: View {
                 Toggle("Create subfolders from EXIF pattern", isOn: $vm.createFolders)
                     .disabled(!hasFolderPattern)
                     .help(hasFolderPattern
-                          ? "Files are copied into subfolders; originals stay in place."
-                          : "Set a folder pattern in the style editor first.")
+                          ? Text("Files are copied into subfolders; originals stay in place.")
+                          : Text("Set a folder pattern in the style editor first."))
 
                 Toggle("Include sidecar files (.xmp, .aae)", isOn: $vm.includeSidecars)
                     .help("Sidecar files with the same name are renamed or copied together with the photo.")

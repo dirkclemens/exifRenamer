@@ -12,7 +12,7 @@ exifRenamer is a native macOS app for renaming and organising photo files based 
 
 ## Features
 
-- **Drag & Drop** – Drop images directly into the window or select them via the open-file dialog
+- **Drag & Drop** – Drop images or whole folders (recursively) into the window or select them via the open-file dialog
 - **EXIF-based renaming** – Date, time, camera make/model, lens, ISO and more as parts of the filename
 - **Format-string system** – Flexible token system for custom naming schemes
 - **Live preview** – New filename is shown immediately before any files are renamed
@@ -20,7 +20,11 @@ exifRenamer is a native macOS app for renaming and organising photo files based 
 - **Folder organisation** – Automatically create subfolders based on date patterns (e.g. `2024/2024-06-15`)
 - **Conflict handling** – Configurable strategy for filename collisions: Skip, Overwrite, or Auto-number
 - **Copy or Move** – Rename in place or copy to a destination folder
-- **macOS Sandbox-compliant** – Security-Scoped Bookmarks for safe file access
+- **RAW+JPG pairs & sidecars** – Pairs keep a common name; `.xmp`/`.aae` sidecar files are renamed along with their photo
+- **Undo & rename log** – Undo the last batch (⌘Z); optional log file for every rename
+- **Safe by design** – Never overwrites files of the running batch; overwritten files go to the Trash
+- **English & German** user interface
+- **macOS Sandbox-compliant** – Security-Scoped Bookmarks for safe file access; folder permissions are remembered
 
 ---
 
@@ -30,8 +34,8 @@ exifRenamer is a native macOS app for renaming and organising photo files based 
 |---|---|
 | macOS | 14 Sonoma or later |
 | Architecture | Apple Silicon only |
-| Xcode | 15 or later |
-| Swift | 5.9 or later |
+| Xcode | 26 or later |
+| Swift | 6 (language mode) |
 
 ---
 
@@ -83,7 +87,7 @@ Naming styles are defined as format strings with placeholders:
 | `%iso` | ISO value | `800` |
 | `%lens` | Lens model | `RF24-70mm_F2.8_L` |
 
-> `%C` is only inserted when filename collisions are detected within the current batch.
+> `%C` is only inserted when filename collisions are detected within the current batch. Files of one shot (same folder and original name, e.g. `IMG_0001.CR3` + `IMG_0001.JPG`) always share the same counter. If a format has no `%C`, a counter is still appended before the extension when names would collide.
 
 #### Built-in Example Styles
 
@@ -109,10 +113,16 @@ When a file with the same name already exists at the destination, the configured
 | Strategy | Behaviour |
 |---|---|
 | **Skip** | File is skipped, status shows `⏭ skipped` |
-| **Overwrite** | Existing file is replaced |
-| **Auto-number** | A counter is appended: `_1`, `_2`, … |
+| **Overwrite** | Existing file is moved to the Trash and replaced (files of the current batch are never overwritten) |
+| **Auto-number** | A counter is appended: `_01`, `_02`, … |
 
 The default strategy can be set in **Settings (⌘,)**.
+
+### Undo & Log
+
+**Undo** (toolbar button or **Edit › Undo**, ⌘Z) reverts the last batch: renamed files are moved back, copies and newly created empty folders are removed, overwritten files are restored from the Trash where possible.
+
+Every batch can be written to a tab-separated log in `~/Library/Application Support/exifRenamer/Logs` (inside the app container) — toggle and **Show Logs in Finder** in Settings.
 
 ---
 
@@ -126,6 +136,8 @@ exifRenamer/
 │   ├── Photo.swift             # Photo object with EXIF data + status
 │   ├── NamingStyle.swift       # Naming preset model
 │   ├── FormatToken.swift       # Token enum with descriptions
+│   ├── EXIFData.swift          # Parsed metadata (locale-independent)
+│   ├── FileOperation.swift     # Recorded file operations (undo/log)
 │   └── RenameResult.swift      # Result enum (.success/.skipped/.failed)
 ├── ViewModels/
 │   └── AppViewModel.swift      # @Observable main view model
@@ -135,7 +147,9 @@ exifRenamer/
 │   ├── StyleStore.swift        # Style persistence (JSON)
 │   ├── RenameService.swift     # Rename/copy logic
 │   ├── FolderOrganizer.swift   # Subfolder creation
-│   ├── FolderAccessManager.swift # Sandbox access management
+│   ├── FolderAccessManager.swift # Sandbox access management (persisted)
+│   ├── MediaScanner.swift      # Folder scanning, image/sidecar detection
+│   ├── RenameLog.swift         # Optional rename log files
 │   └── DebugLog.swift          # Internal logging
 └── Views/
     ├── DropZoneView.swift       # Drag & drop target area
@@ -145,14 +159,19 @@ exifRenamer/
     ├── OutputOptionsView.swift  # Destination folder + options
     ├── ErrorBannerView.swift    # Inline error display
     └── SettingsView.swift       # App preferences
+
+exifRenamerTests/               # Swift Testing unit tests
 ```
 
 ### Technical Details
 
 - **Framework:** SwiftUI
-- **Architecture:** MVVM with the `@Observable` macro (Swift 5.9 / macOS 14+)
+- **Architecture:** MVVM with the `@Observable` macro, Swift 6 language mode, main-actor default isolation
+- **Concurrency:** EXIF reading and file I/O run off the main thread with progress reporting
+- **Localization:** String Catalog (`Localizable.xcstrings`), English + German
+- **Tests:** `xcodebuild test -project exifRenamer.xcodeproj -scheme exifRenamer`
 - **EXIF reading:** Apple `ImageIO` framework (`CGImageSource`)
-- **Date fallback:** Uses the file modification date when no EXIF date is available
+- **Date fallback:** `DateTimeOriginal` → `DateTimeDigitized` → TIFF `DateTime` → file modification date
 - **Sandbox:** `com.apple.security.files.user-selected.read-write` with Security-Scoped Bookmarks
 - **Preset storage:** `~/Library/Application Support/exifRenamer/styles.json`
 
