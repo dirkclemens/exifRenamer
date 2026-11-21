@@ -8,7 +8,18 @@
 
 /* Begin PBXFileReference section */
 		432013C42F9E217700B219C0 /* exifRenamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = exifRenamer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1E0F0002FA0000000C0FFEE /* exifRenamerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = exifRenamerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXContainerItemProxy section */
+		A1E0F0022FA0000000C0FFEE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 432013BC2F9E217700B219C0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 432013C32F9E217700B219C0;
+			remoteInfo = exifRenamer;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		432013C62F9E217700B219C0 /* exifRenamer */ = {
@@ -16,10 +27,22 @@
 			path = exifRenamer;
 			sourceTree = "<group>";
 		};
+		A1E0F0012FA0000000C0FFEE /* exifRenamerTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = exifRenamerTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		432013C12F9E217700B219C0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1E0F0042FA0000000C0FFEE /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				432013C62F9E217700B219C0 /* exifRenamer */,
+				A1E0F0012FA0000000C0FFEE /* exifRenamerTests */,
 				432013C52F9E217700B219C0 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				432013C42F9E217700B219C0 /* exifRenamer.app */,
+				A1E0F0002FA0000000C0FFEE /* exifRenamerTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,29 @@
 			productReference = 432013C42F9E217700B219C0 /* exifRenamer.app */;
 			productType = "com.apple.product-type.application";
 		};
+		A1E0F0072FA0000000C0FFEE /* exifRenamerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1E0F0102FA0000000C0FFEE /* Build configuration list for PBXNativeTarget "exifRenamerTests" */;
+			buildPhases = (
+				A1E0F0062FA0000000C0FFEE /* Sources */,
+				A1E0F0042FA0000000C0FFEE /* Frameworks */,
+				A1E0F0052FA0000000C0FFEE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A1E0F0032FA0000000C0FFEE /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A1E0F0012FA0000000C0FFEE /* exifRenamerTests */,
+			);
+			name = exifRenamerTests;
+			packageProductDependencies = (
+			);
+			productName = exifRenamerTests;
+			productReference = A1E0F0002FA0000000C0FFEE /* exifRenamerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +130,10 @@
 				TargetAttributes = {
 					432013C32F9E217700B219C0 = {
 						CreatedOnToolsVersion = 26.4.1;
+					};
+					A1E0F0072FA0000000C0FFEE = {
+						CreatedOnToolsVersion = 27.2;
+						TestTargetID = 432013C32F9E217700B219C0;
 					};
 				};
 			};
@@ -100,12 +152,20 @@
 			projectRoot = "";
 			targets = (
 				432013C32F9E217700B219C0 /* exifRenamer */,
+				A1E0F0072FA0000000C0FFEE /* exifRenamerTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		432013C22F9E217700B219C0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1E0F0052FA0000000C0FFEE /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +182,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1E0F0062FA0000000C0FFEE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A1E0F0032FA0000000C0FFEE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 432013C32F9E217700B219C0 /* exifRenamer */;
+			targetProxy = A1E0F0022FA0000000C0FFEE /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		432013CD2F9E217900B219C0 /* Debug */ = {
@@ -337,6 +412,46 @@
 			};
 			name = Release;
 		};
+		A1E0F0082FA0000000C0FFEE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BXZ479CGUZ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = de.adcore.exifRenamerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/exifRenamer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/exifRenamer";
+			};
+			name = Debug;
+		};
+		A1E0F0092FA0000000C0FFEE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BXZ479CGUZ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = de.adcore.exifRenamerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/exifRenamer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/exifRenamer";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -354,6 +469,15 @@
 			buildConfigurations = (
 				432013D02F9E217900B219C0 /* Debug */,
 				432013D12F9E217900B219C0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1E0F0102FA0000000C0FFEE /* Build configuration list for PBXNativeTarget "exifRenamerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1E0F0082FA0000000C0FFEE /* Debug */,
+				A1E0F0092FA0000000C0FFEE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

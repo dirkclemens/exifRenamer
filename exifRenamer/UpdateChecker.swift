@@ -13,6 +13,8 @@ enum UpdateChecker {
     private static let endpoint = URL(string: "https://api.adcore.de/apps/check.php")!
 
     static func checkForUpdate() {
+        // Don't phone home while the app is only hosting unit tests.
+        guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
         let version = (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "0"
 
         var components = URLComponents(url: endpoint, resolvingAgainstBaseURL: false)!
